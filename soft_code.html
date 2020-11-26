@@ -1,0 +1,83 @@
+<html>
+    <head>
+        <style>
+            .bar{
+                fill: lightblue;
+            }
+        </style>
+        <script src="https://d3js.org/d3.v4.min.js"></script>
+    </head>
+    <body>
+        <svg width="1000" height="700"></svg>
+        <script>
+            let svg = d3.select("svg"),
+                margin = 300,
+                width = svg.attr("width") - margin,
+                height = svg.attr("height") - margin
+
+            let xScale = d3.scaleBand().range ([0, width]).padding(0.4),
+                yScale = d3.scaleLinear().range ([height, 0])
+
+                svg.append("text")
+       .attr("transform", "translate(100,0)")
+       .attr("x", 50)
+       .attr("y", 50)
+       .attr("font-size", "24px")
+       .attr("font-family", "sans-serif")
+       .text("Million lines of code in popular software")
+
+            let g = svg.append("g")
+                        .attr("transform", "translate(" + 100 + "," + 100 + ")")
+
+            d3.csv("https://raw.githubusercontent.com/DanielAsztalos/d3_lines_of_code_data/main/KIB%20-%20Lines%20of%20Code%20(public)%20-%20Lines%20of%20code.csv", function(err, data) {
+                if(err){
+                    throw err;
+                }
+
+                data = data.slice(0, 20)
+
+                //console.log(+data[10]["million lines of code"]);
+
+
+                xScale.domain(data.map(function(d) { return d.Software; }));
+                yScale.domain([0, d3.max(data, function(d) { return d["million lines of code"]; })]);
+
+                g.append("g")
+         .attr("transform", "translate(0," + height + ")")
+         .call(d3.axisBottom(xScale))
+         .selectAll("text")
+         .attr("x", -10)
+         .attr("transform", "rotate(270)")
+         .attr("y", -5)
+         .style("text-anchor", "end");
+
+        g.append("g")
+         .call(d3.axisLeft(yScale).tickFormat(function(d){
+             return d;
+         }).ticks(10))
+         .append("text")
+         .attr("transform", "rotate(-90)")
+         .attr("y", 6)
+         .attr("dy", "-5.1em")
+         .attr("text-anchor", "end")
+         .attr("stroke", "black")
+         .attr("font-size", 12)
+         .text("Lines of code (million)");
+
+         g.selectAll(".bar")
+         .data(data)
+         .enter().append("rect")
+         .attr("class", "bar")
+         .attr("x", function(d) { return xScale(d.Software); })
+         .attr("y", function(d) { return yScale(d["million lines of code"]); })
+         .attr("width", xScale.bandwidth())
+         .attr("height", function(d) { return height - yScale(d["million lines of code"]); });
+
+        //  g.selectAll("text").attr("transform", "rotate(90)")
+        //  .attr("x", 9)
+        //  .attr("y", 10)
+        //  .style("text-anchor", "start")
+        });
+        </script>
+    </body>
+</html>
